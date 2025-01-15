@@ -111,8 +111,7 @@ const processAffFiles = async (innerFolder) => {
 
           return `scenecontrol(${p1.trim()},${p2.trim()},${
             p3 ? p3.trim() : ""
-          },${p4 ? p4.trim() : ""},${p5 ? p5.trim() : ""},${
-            p6 ? p6.trim() : ""
+          },${p4 ? p4.trim() : ""}
           });`;
         }
       )
@@ -151,7 +150,6 @@ const processAffFiles = async (innerFolder) => {
     for (let i = 0; i < 3; i++) {
       const newFilePath = path.join(innerFolder, `${i}.aff`);
       await fs.promises.copyFile(singleAffPath, newFilePath);
-      console.log(`Created duplicate: ${i}.aff`);
     }
   }
 };
@@ -189,17 +187,35 @@ async function processArcPkg(filePath) {
   const arcprojContent = await fs.promises.readFile(arcprojPath, "utf8");
   const arcprojData = parseArcProj(arcprojContent);
 
+  const dummyData = {
+    title: "???",
+    composer: "???",
+    bpmText: "100",
+    baseBpm: 100.0,
+    charter: "???",
+    illustrator: "???",
+    difficulty: "0",
+  };
+
   const songlistData = {
     idx: 0,
-    id: innerFolderName.toLowerCase().replace(/[^a-z0-9]/g, ""),
-    title_localized: { en: arcprojData.title },
-    artist: arcprojData.composer,
-    search_title: { ja: arcprojData.title, ko: arcprojData.title },
-    search_artist: { ja: arcprojData.composer, ko: arcprojData.composer },
-    bpm: arcprojData.bpmText,
-    bpm_base: parseFloat(arcprojData.baseBpm),
+    id: (innerFolderName || "unknown_folder")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ""),
+    title_localized: { en: arcprojData.title || dummyData.title },
+    artist: arcprojData.composer || dummyData.composer,
+    search_title: {
+      ja: [arcprojData.title || dummyData.title],
+      ko: [arcprojData.title || dummyData.title],
+    },
+    search_artist: {
+      ja: [arcprojData.composer || dummyData.composer],
+      ko: [arcprojData.composer || dummyData.composer],
+    },
+    bpm: arcprojData.bpmText || dummyData.bpmText,
+    bpm_base: parseFloat(arcprojData.baseBpm || dummyData.baseBpm),
     set: "custom",
-    purchase: innerFolderName,
+    purchase: innerFolderName || "unknown_folder",
     audioPreview: 0,
     audioPreviewEnd: 0,
     side: 0,
@@ -212,24 +228,30 @@ async function processArcPkg(filePath) {
     difficulties: [
       {
         ratingClass: 0,
-        chartDesigner: arcprojData.charter,
-        jacketDesigner: arcprojData.illustrator,
-        rating: parseInt(arcprojData.difficulty.replace(/\D+/g, "")),
-        ...(arcprojData.difficulty.includes("+") && { ratingPlus: true }),
+        chartDesigner: arcprojData.charter || dummyData.charter,
+        jacketDesigner: arcprojData.illustrator || dummyData.illustrator,
+        rating: parseInt(
+          (arcprojData.difficulty || dummyData.difficulty).replace(/\D+/g, "")
+        ),
+        ...(arcprojData.difficulty?.includes("+") && { ratingPlus: true }),
       },
       {
         ratingClass: 1,
-        chartDesigner: arcprojData.charter,
-        jacketDesigner: arcprojData.illustrator,
-        rating: parseInt(arcprojData.difficulty.replace(/\D+/g, "")),
-        ...(arcprojData.difficulty.includes("+") && { ratingPlus: true }),
+        chartDesigner: arcprojData.charter || dummyData.charter,
+        jacketDesigner: arcprojData.illustrator || dummyData.illustrator,
+        rating: parseInt(
+          (arcprojData.difficulty || dummyData.difficulty).replace(/\D+/g, "")
+        ),
+        ...(arcprojData.difficulty?.includes("+") && { ratingPlus: true }),
       },
       {
         ratingClass: 2,
-        chartDesigner: arcprojData.charter,
-        jacketDesigner: arcprojData.illustrator,
-        rating: parseInt(arcprojData.difficulty.replace(/\D+/g, "")),
-        ...(arcprojData.difficulty.includes("+") && { ratingPlus: true }),
+        chartDesigner: arcprojData.charter || dummyData.charter,
+        jacketDesigner: arcprojData.illustrator || dummyData.illustrator,
+        rating: parseInt(
+          (arcprojData.difficulty || dummyData.difficulty).replace(/\D+/g, "")
+        ),
+        ...(arcprojData.difficulty?.includes("+") && { ratingPlus: true }),
       },
     ],
   };
